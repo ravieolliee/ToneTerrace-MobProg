@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "179370835134",
+    "project_id": "toneterrace-457fd",
+    "storage_bucket": "toneterrace-457fd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:179370835134:android:e7d048af61f224251632ef",
+        "android_client_info": {
+          "package_name": "com.toneterrace.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBceJBvrC35fRkiy_9mw-3jFnO0n1RBy7M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
