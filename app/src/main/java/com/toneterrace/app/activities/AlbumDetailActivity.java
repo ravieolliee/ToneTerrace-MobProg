@@ -57,8 +57,12 @@ public class AlbumDetailActivity extends AppCompatActivity {
             if (currentAlbumData.albumArtUrl != null && !currentAlbumData.albumArtUrl.isEmpty()) {
                 Glide.with(this)
                         .load(currentAlbumData.albumArtUrl)
-                        .placeholder(R.drawable.ic_launcher_background)
+                        .placeholder(R.mipmap.ic_album_placeholder) // Show mipmap while loading
+                        .error(R.mipmap.ic_album_placeholder)       // Show mipmap if URL is broken
                         .into(imgAlbumArt);
+            } else {
+                // If NO URL exists at all, explicitly set the mipmap resource
+                imgAlbumArt.setImageResource(R.mipmap.ic_album_placeholder);
             }
         }
     }

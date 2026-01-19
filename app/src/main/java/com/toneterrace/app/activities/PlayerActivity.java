@@ -123,7 +123,11 @@ public class PlayerActivity extends AppCompatActivity {
         if (currentSong != null) {
             tvTitle.setText(currentSong.title);
             tvArtist.setText(currentSong.artist);
-            Glide.with(this).load(currentSong.albumArtUrl).circleCrop().into(imgAlbumArt);
+            if(currentSong.albumArtUrl == null) {
+                Glide.with(this).load(currentSong.albumArtUrl).circleCrop().into(imgAlbumArt);
+            }else{
+                Glide.with(this).load(R.mipmap.ic_album_placeholder).circleCrop().into(imgAlbumArt);
+            }
         }
     }
 

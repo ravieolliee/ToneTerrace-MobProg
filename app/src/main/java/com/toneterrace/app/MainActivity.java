@@ -130,19 +130,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkPermissionAndLoad() {
-        // Determine which permission we need based on Android version
-        String permission;
+        List<String> permissionsToRequest = new ArrayList<>();
 
+        // 1. Determine Storage Permission (Based on Android Version)
+        String storagePermission;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permission = Manifest.permission.READ_MEDIA_AUDIO;
+            storagePermission = Manifest.permission.READ_MEDIA_AUDIO;
         } else {
-            permission = Manifest.permission.READ_EXTERNAL_STORAGE;
+            storagePermission = Manifest.permission.READ_EXTERNAL_STORAGE;
         }
-        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-            // Request Permission
-            ActivityCompat.requestPermissions(this, new String[]{permission}, 200);
+
+        // Check if Storage is granted
+        if (ContextCompat.checkSelfPermission(this, storagePermission) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(storagePermission);
+        }
+
+        // 2. Check Microphone Permission (REQUIRED for Visualizer)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.RECORD_AUDIO);
+        }
+
+        // 3. Request missing permissions or Proceed
+        if (!permissionsToRequest.isEmpty()) {
+            ActivityCompat.requestPermissions(this, permissionsToRequest.toArray(new String[0]), 200);
         } else {
-            // Already granted, load music
+            // All permissions already granted
             importMusic();
         }
     }
@@ -151,11 +163,32 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
         if (requestCode == 200) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            boolean storageGranted = false;
+            boolean audioGranted = false;
+
+            // Loop through results to see what was granted
+            for (int i = 0; i < permissions.length; i++) {
+                String perm = permissions[i];
+                if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                    if (perm.equals(Manifest.permission.READ_MEDIA_AUDIO) ||
+                            perm.equals(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                        storageGranted = true;
+                    }
+                    if (perm.equals(Manifest.permission.RECORD_AUDIO)) {
+                        audioGranted = true;
+                    }
+                }
+            }
+
+            if (storageGranted) {
                 importMusic();
+                if (!audioGranted) {
+                    Toast.makeText(this, "Microphone denied. Visualizer will be disabled.", Toast.LENGTH_SHORT).show();
+                }
             } else {
-                Toast.makeText(this, "Permission denied. Cannot load songs.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Storage permission denied. Cannot load songs.", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -191,6 +224,22 @@ public class MainActivity extends AppCompatActivity {
         // This is a REAL URL that actually plays music
         dummy.add(new Song("Sci-Fi", "Bensound", "Demo Album", "2:00",
                 "https://www.bensound.com/bensound-music/bensound-scifi.mp3", ""));
+        dummy.add(new Song(
+                "Impact Moderato",
+                "Kevin MacLeod",
+                "YouTube Audio Library",
+                "3:00",
+                "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+                "https://via.placeholder.com/150"
+        ));
+        dummy.add(new Song(
+                "Impact Allegro",
+                "Kevin MacLeod",
+                "YouTube Audio Library",
+                "3:15",
+                "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+                "https://via.placeholder.com/150"
+        ));
 
         db.songDao().insertAll(dummy);
 
@@ -199,47 +248,4 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // ... Keep your seedDatabase() method here ...
-    private void seedDatabase() {
-        // (Copy the exact code from previous step if you deleted it)
-        List<Song> currentSongs = db.songDao().getAllSongs();
-        if (db.songDao().exists("Yellow", "Coldplay") == 0) {
-            db.songDao().insertSong(
-                    new Song(
-                            "Yellow",
-                            "Coldplay",
-                            "Parachutes",
-                            "4:29",
-                            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-                            "https://via.placeholder.com/150"
-                    )
-            );
-        }
-
-        if (db.songDao().exists("Impact Moderato", "Kevin MacLeod") == 0) {
-            db.songDao().insertSong(
-                    new Song(
-                            "Impact Moderato",
-                            "Kevin MacLeod",
-                            "YouTube Audio Library",
-                            "3:00",
-                            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-                            "https://via.placeholder.com/150"
-                    )
-            );
-        }
-
-        if (db.songDao().exists("Impact Allegro", "Kevin MacLeod") == 0) {
-            db.songDao().insertSong(
-                    new Song(
-                            "Impact Allegro",
-                            "Kevin MacLeod",
-                            "YouTube Audio Library",
-                            "3:15",
-                            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-                            "https://via.placeholder.com/150"
-                    )
-            );
-        }
-    }
 }
